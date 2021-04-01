@@ -1,0 +1,50 @@
+---
+title: "pproject"
+author: "Noah Hansen"
+date: "4/1/2021"
+output: html_document
+---
+
+```{r setup, include=T}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(lubridate)
+```
+
+```{r include=F}
+# used to combine separate csvs into one
+
+# library(plyr)
+# from https://statisticsglobe.com/merge-csv-files-in-r
+
+# data_all <- list.files(path = "D:/stat340/data",     # Identify all csv files in folder
+#                        pattern = "*.csv", full.names = TRUE) %>% 
+#   lapply(read_csv) %>%                              # Store all files in list
+#   bind_rows                                         # Combine data sets into one data set 
+
+# write.csv(data_all, file = "D:/stat340/data/aqi_1980_2019", sep=",")
+```
+
+
+```{r}
+aqi_dat = read_csv("aqi_1980_2019.csv")
+aqi_dat = aqi_dat %>% select(-X1, 
+                     cbsa = CBSA,
+                     date = Date,
+                     aqi = AQI,
+                     category = Category,
+                     cbsa_code = `CBSA Code`, 
+                     param = `Defining Parameter`, 
+                     site = `Defining Site`,
+                     num_sites = `Number of Sites Reporting`)
+head(aqi_dat)
+```
+
+
+```{r}
+aqi_dat = aqi_dat %>% mutate(year = year(date), month = month(date), wday = wday(date, label=TRUE))
+
+temp = aqi_dat %>% group_by(year) %>% summarize(avg_aqi = mean(aqi))
+temp %>% arrange(aqi)
+```
+

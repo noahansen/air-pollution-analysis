@@ -1,0 +1,19 @@
+---
+title: "Group List/Data Description"
+author: "Noah Hansen, Luke Lochner, Yuhan Dai, Steven Hizmi"
+date: "3/25/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+```
+
+## Proposal
+
+We are thinking about doing an analysis of Air Quality Index (AQI) data to see how pollution is related various variables, such as population health, city cleanliness, or how ozone levels get worse in the summer. Currently, we are interested to see how pollution levels have changed over time with the passage of legislation or development of new technologies. Another thing to look into is how pollution can move downwind to pollute another area. Some parts of the Midwest have been criticized by some eastern states for "dumping" our air pollution on them, so the East has to pay for the pollution taxes/cleanup instead of the areas that created the pollution. We may possibly map the pollution across the US by county.
+
+## Data
+
+The United States Environmental Protection Agency (EPA) makes all of the [AQI data publically available](https://www.epa.gov/outdoor-air-quality-data). They do varius breakdowns from hourly to yearly, but we are likely most interested in the daily data. They pull this data primarily from the AQS (Air Quality System) database. If we would like to go into more depth, we can query the AQS database using their API to get more specific data such as filtering by specific measuring locations. We could see how pollution changes specifically in Madison, for example, as we have an operating sensor.
+
+
