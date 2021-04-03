@@ -37,14 +37,64 @@ aqi_dat = aqi_dat %>% select(-X1,
                      param = `Defining Parameter`, 
                      site = `Defining Site`,
                      num_sites = `Number of Sites Reporting`)
+
+aqi_dat = aqi_dat %>% mutate(year = year(date), month = month(date), wday = wday(date, label=TRUE))
 head(aqi_dat)
+```
+
+This doesn't mean anything, really, as it combines all pollutants (maybe that is okay though?). Param is really 'Defining Parameter', which means it is the param chosen for the day from multiple that were measured. My guess is that they chose the pollutant with the worst AQI. If one pollutant is bad, then it probably doesn't matter too much if other pollutants are not as bad. Either way it is unhealthy for senitive groups or everyone. However, having two pollutants at moderate has to be worse than just one.
+
+```{r}
+temp = aqi_dat %>% group_by(year) %>% summarize(avg_aqi = mean(aqi))
+temp %>% arrange(avg_aqi)
+```
+
+TODO: The parameter is different depending on the date. If a CBSA reports multiple pollutants in a day, only one is chosen in the dataset. Is this okay? 
+
+```{r}
+aqi_dat %>% filter(date > "2018-02-07" & date < "2019-02-07", cbsa_code == 11020)
+```
+
+This table shows the average and maximum gaps in reporting each criteria pollutant for each CBSA. Maybe we would want to exclude some of the pollutants that are not measured very often per CBSA code. We can repeat this analysis for different time periods instead of the whole 40 years, as some stop reporting certain values for years at a time.
+
+```{r}
+time_diff <- aqi_dat %>% 
+  group_by(cbsa_code,param) %>% 
+  arrange(date) %>% 
+  # lag() gets the value from the previous row. 
+  # Then extract digits from output of the difference, which is a sentence for some reason
+  summarise(date_diff = as.integer(str_extract(date-lag(date),"\\d*"))) %>% 
+  summarise(diff_avg = mean(date_diff, na.rm = T), diff_max = max(date_diff, na.rm=T))
+
+time_diff
+```
+Displays the average difference in days for reporting each pollutant in a nicer format. Also shows what pollutants each CBSA reports 
+```{r}
+time_diff %>% select(-diff_max) %>% pivot_wider(names_from = param, values_from = diff_avg)
+```
+For analysis on all 40 years, we probably want at least 5 datapoints a year for a total sample of 200. The avg difference for this would be less than 73. Maybe not the best metric because one CBSA meets this standard but did not report for 37 years. If a CBSA has data for a pollutant daily, long periods do not bring the average down very much.
+
+```{r}
+time_diff %>% filter(diff_avg < 73)
+```
+
+```{r include = F}
+# Don't know why this way doesn't end up working for date difference
+
+# how to take the differce in dates
+# x1 <- as.Date("2019-02-07")
+# x2 <- as.Date("2018-02-07")
+# x1 +1
+# abs(julian(x1,x2)[1])
+# 
+# julian_new = function(date, origin){
+#   return(tryCatch(expr = julian(date,origin), error = function(e){print(e); return(NA)}))
+# }
+
+# aqi_dat %>% mutate(date_diff = abs(julian_new(date,lag(date))[1])) 
 ```
 
 
 ```{r}
-aqi_dat = aqi_dat %>% mutate(year = year(date), month = month(date), wday = wday(date, label=TRUE))
-
-temp = aqi_dat %>% group_by(year) %>% summarize(avg_aqi = mean(aqi))
-temp %>% arrange(aqi)
 ```
 
