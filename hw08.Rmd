@@ -1,0 +1,14 @@
+---
+title: "hw8"
+authors: "Noah Hansen, Luke Lochner, Steven Hizmi"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Please write a short description of why you find your data source interesting. 
+## Turn this in on canvas by class time on Thursday, week 11.
+
+Our data is from the United States Environmental Protection Agency (EPA), in which there are multiple different time intervals we could explore such as hourly to yearly data. Because this data is primarily from the AQS database, we could potentially query it and go more into depth. We think this data is a great start, as there are many paths we could take to research various different topics in how pollution affects the environment. Using this data we could explore relationships between population health and pollution, highlighting main areas in need of environmental protection. We mainly want to see how pollution levels have changed over time, in relation to legislation and technology. This is another reason why we find our data source interesting, as it contains data dating back to 1980 all the way to 2019. So we have a lot of relevant data to work with.
