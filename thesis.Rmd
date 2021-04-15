@@ -1,0 +1,8 @@
+---
+title: "Thesis"
+author: "Noah Hansen, Steve Hizmi, Yuhan Dai"
+date: "4/14/2021"
+output: html_document
+---
+
+Over time, pollution levels have improved within the US for metro and micropolitan areas. Furthermore, areas with larger population densities have worse pollution levels and more health problems related to pollution, suggesting that lowering pollution levels should remain a prioritity.
