@@ -1,6 +1,6 @@
 ---
 title: "pproject"
-author: "Noah Hansen"
+author: "Noah Hansen, Yuhan Dai, Steven Hizmi"
 date: "4/1/2021"
 output: html_document
 ---
