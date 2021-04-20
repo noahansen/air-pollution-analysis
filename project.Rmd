@@ -1,7 +1,7 @@
 ---
 title: "pproject"
 author: "Noah Hansen, Yuhan Dai, Steven Hizmi"
-date: "4/1/2021"
+date: "4/19/2021"
 output: html_document
 ---
 
@@ -52,9 +52,9 @@ temp %>% arrange(avg_aqi)
 TODO: The parameter is different depending on the date. If a CBSA reports multiple pollutants in a day, only one is chosen in the dataset. Is this okay? 
 
 
-The following section groups the data by year and pollution type, then summarized the data by taking the mean of the AQI. 
+>_The following section groups the data by year and pollution type, then summarized the data by taking the mean of the AQI. 
 The graph depicts the change of air quality data over the last 40 years. The horizontal line indicates the Good Level for AQI, below the line (50) means the air quality is satisfactory.
-The details regarding the levels of concern for AQI can be found here: https://www.airnow.gov/aqi/aqi-basics/
+The details regarding the levels of concern for AQI can be found here: https://www.airnow.gov/aqi/aqi-basics/_
 
 ```{r, message=F}
 yr_pol = aqi_dat %>% group_by(year, param) %>% summarise(avg_aqi = mean(aqi))
@@ -65,7 +65,7 @@ ggplot(yr_pol, aes(x = year, y = avg_aqi, color = param)) +
   labs(title = "US Air Quality Data by Pollution Type")
 ```
 
->_As shown above, US pollution overall is improving since the AQI is decreasing for most of the pollution type. However, there are drastic increases for both CO and PM2.5. TODO: Further analysis on these two pollutants. (source of these two pollutants, vehicle or industrial. maybe check for rural vs urban)_
+As shown above, US pollution overall is improving since the AQI is decreasing for most of the pollution type. However, there are drastic increases for both CO and PM2.5. TODO: Further analysis on these two pollutants. (source of these two pollutants, vehicle or industrial. maybe check for rural vs urban)
 
 ```{r}
 aqi_dat %>% filter(date > "2018-02-07" & date < "2019-02-07", cbsa_code == 11020)
