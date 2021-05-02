@@ -112,15 +112,15 @@ time_diff %>% filter(diff_avg < 73)
 
 
 ```{r}
-county_2015 <- read.csv("../annual_aqi_by_county_2015.csv")
-county_2016 <- read.csv("../annual_aqi_by_county_2016.csv")
-county_2017 <- read.csv("../annual_aqi_by_county_2017.csv")
-county_2018 <- read.csv("../annual_aqi_by_county_2018.csv")
-county_2019 <- read.csv("../annual_aqi_by_county_2019.csv")
-county_2020 <- read.csv("../annual_aqi_by_county_2020.csv")
+county_2015 <- read.csv("data/annual_aqi_by_county_2015.csv")
+county_2016 <- read.csv("data/annual_aqi_by_county_2016.csv")
+county_2017 <- read.csv("data/annual_aqi_by_county_2017.csv")
+county_2018 <- read.csv("data/annual_aqi_by_county_2018.csv")
+county_2019 <- read.csv("data/annual_aqi_by_county_2019.csv")
+county_2020 <- read.csv("data/annual_aqi_by_county_2020.csv")
 
-daily_2019 <- read.csv("../daily_44201_2019.csv")
-daily_2020 <- read.csv("../daily_44201_2020.csv")
+daily_2019 <- read.csv("data/daily_44201_2019.csv")
+daily_2020 <- read.csv("data/daily_44201_2020.csv")
 
 counties <- rbind(county_2015,county_2016, county_2017, county_2018, county_2019, county_2020) 
 
