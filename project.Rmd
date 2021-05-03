@@ -52,9 +52,9 @@ temp %>% arrange(avg_aqi)
 TODO: The parameter is different depending on the date. If a CBSA reports multiple pollutants in a day, only one is chosen in the dataset. Is this okay? 
 
 
->_The following section groups the data by year and pollution type, then summarized the data by taking the mean of the AQI. 
+>The following section groups the data by year and pollution type, then summarized the data by taking the mean of the AQI. 
 The graph depicts the change of air quality data over the last 40 years. The horizontal line indicates the Good Level for AQI, below the line (50) means the air quality is satisfactory.
-The details regarding the levels of concern for AQI can be found here: https://www.airnow.gov/aqi/aqi-basics/_
+The details regarding the levels of concern for AQI can be found here: https://www.airnow.gov/aqi/aqi-basics/
 
 ```{r, message=F}
 yr_pol = aqi_dat %>% group_by(year, param) %>% summarise(avg_aqi = mean(aqi))
@@ -65,7 +65,73 @@ ggplot(yr_pol, aes(x = year, y = avg_aqi, color = param)) +
   labs(title = "US Air Quality Data by Pollution Type")
 ```
 
-As shown above, US pollution overall is improving since the AQI is decreasing for most of the pollution type. However, there are drastic increases for both CO and PM2.5. TODO: Further analysis on these two pollutants. (source of these two pollutants, vehicle or industrial. maybe check for rural vs urban)
+As shown above, US pollution overall is improving since the AQI is decreasing for most of the pollution type. However, there are drastic increases for both CO and PM2.5. 
+
+>The following section is trying to discover the trend of US vehicle usage from 1960 to 2019.  
+The data used in this section can be found here: https://www.bts.gov/content/us-vehicle-miles
+
+```{r, warning=F}
+vehicle_miles = read_csv("US_vehicle_miles.csv")
+#clean up data
+names(vehicle_miles) <- as.character(unlist(vehicle_miles[1,]))
+vehicle_miles = vehicle_miles[-1,]
+
+vehicle_use <- vehicle_miles %>% filter(Year == "Air carrier, domestic, all services" | Year == "Highway, total" | Year == "Transite, total" | Year == "Total train-miles")
+# want the sum of miles for each category
+t_vehicle <- as.data.frame(t(vehicle_use))
+names(t_vehicle) <- as.character(unlist(t_vehicle[1, ]))
+rowname = rownames(t_vehicle)
+t_vehicle = t_vehicle[-1,]
+
+for (i in 1:nrow(t_vehicle)){
+  for (j in 1:ncol(t_vehicle)){
+      t_vehicle[i, j] = gsub(",","",t_vehicle[i, j])
+  }
+}
+#convert to numeric
+for (j in 1:ncol(t_vehicle)){
+  t_vehicle[,j] = as.numeric(t_vehicle[,j])
+}
+
+t_vehicle <- t_vehicle %>% mutate(sum = rowSums(.), year = rowname[-1])
+
+ggplot(t_vehicle, aes(x = year, y = sum)) +
+  scale_y_continuous(trans='log10') +
+  geom_point() +
+  geom_line(aes(group = 1)) +
+  labs(title = "U.S. Vehicle-Miles") +
+  xlab("Year") +
+  ylab("Miles (Millions)") +
+  theme(axis.text.x = element_text(angle = 60, hjust = 1))
+  
+```
+
+As shown above, the usage of vehicles in the US is siginificantly increasing over the past few decades. Due to the source of the data, between year 1960 and 1990, the discrepancy is 5 years instead of 1, which results in a steeper slope than from 1990 to 2019.
+
+> The following section is to perform a linear regression on CO and PM2.5 level with US vehicle miles to see if there's a significant relation between them. 
+
+```{r}
+#CO and PM2.5 data
+poll2 <- yr_pol %>% filter(param == "PM2.5" | param == "CO") %>%
+  pivot_wider(names_from = param, values_from = avg_aqi) %>%
+  filter(year >= 1990)
+
+temp_miles <- t_vehicle %>% 
+  select(sum, year) %>% 
+  filter(year >= 1990) %>% 
+  rename(miles = sum)
+
+mile_poll <- merge(poll2, temp_miles, by = "year")
+
+lmCO = lm(CO ~ miles, data = mile_poll)
+summary(lmCO)
+
+lmPM = lm(PM2.5 ~ miles, data = mile_poll)
+summary(lmPM)
+```
+
+According to the linear regressions above, the p values of miles for each pollutant are significant enough which indicates that there's a correlation between US vehicle usage and pollutant level for PM2.5 and CO. However, since the slope for CO is negative, this indicate that the fluctuate of CO level might not related to the US vehicle usage.
+
 
 ```{r}
 aqi_dat %>% filter(date > "2018-02-07" & date < "2019-02-07", cbsa_code == 11020)

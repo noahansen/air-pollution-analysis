@@ -1,0 +1,43 @@
+---
+title: "pproject"
+author: "Noah Hansen, Yuhan Dai, Steven Hizmi"
+date: "4/21/2021"
+output: html_document
+---
+```{r setup, include=T, message=F}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(lubridate)
+```
+
+
+```{r}
+aqi_dat = read_csv("aqi_1980_2019.csv")
+aqi_dat = aqi_dat %>% select(-X1, 
+                     cbsa = CBSA,
+                     date = Date,
+                     aqi = AQI,
+                     category = Category,
+                     cbsa_code = `CBSA Code`, 
+                     param = `Defining Parameter`, 
+                     site = `Defining Site`,
+                     num_sites = `Number of Sites Reporting`)
+
+aqi_dat = aqi_dat %>% mutate(year = year(date), month = month(date), wday = wday(date, label=TRUE))
+head(aqi_dat)
+```
+
+>_The following section groups the data by year and pollution type, then summarized the data by taking the mean of the AQI. 
+The graph depicts the change of air quality data over the last 40 years. The horizontal line indicates the Good Level for AQI, below the line (50) means the air quality is satisfactory.
+The details regarding the levels of concern for AQI can be found here: https://www.airnow.gov/aqi/aqi-basics/_
+
+```{r, message=F}
+yr_pol = aqi_dat %>% group_by(year, param) %>% summarise(avg_aqi = mean(aqi))
+
+ggplot(yr_pol, aes(x = year, y = avg_aqi, color = param)) +
+  geom_line(size = 1) +
+  geom_hline(yintercept = 50) +
+  labs(title = "US Air Quality Data by Pollution Type")
+```
+
+As shown above, US air pollution overall is improving since the AQI is decreasing for most of the pollution type. However, there are drastic increases for both CO and PM2.5. Further analysis on these two pollutants is needed. (source of these two pollutants, vehicle or industrial or other sources which contributes the most)
