@@ -87,6 +87,10 @@ Sources:
 
 "Air Data: Air Quality Data Collected at Outdoor Monitors Across the US", EPA, April 15, 2021, https://www.epa.gov/outdoor-air-quality-data
 
+[Daily and Annual Ozone data](https://aqs.epa.gov/aqsweb/airdata/download_files.html)
+[US Vehicle Miles](https://www.bts.gov/content/us-vehicle-miles )
+
+
 TODO- Explain relevant pollutants.
 
 - CO: Carbon Monoxide forms from burning fuel. 
@@ -107,6 +111,10 @@ TODO- Explain relevant pollutants.
 
 - Used separate data frames for 2019 and 2020 daily AQI data
 
+-- Cleaning the US Vehicle Miles data
+
+- Adding row names to the data, reshaping the dataset by using transpose and filtered the data for 4 variables w/o NA due to the data set is ragged on both edge.
+
 # Methods
 
 ## Steve
@@ -115,11 +123,16 @@ TODO- Explain relevant pollutants.
 
 -- Used a scatterplot for the daily data, so we can see any clusters of datapoints and how that compared to clusters of data during Covid in the first half of 2020.
 
+## Yuhan
+-- Used linear regression on CO and PM2.5 pollutants with miles being the explanatory variable to discover the relationship between them. 
+
+-- Used lineplot to depict the trend of AQI level for each pollutant for the entire US for the last 4 decades, and used scatter plot for the CO, PM2.5 and miles, and then added linear regression line to fit the scatter plot.
+
 # Results
 
 ## Noah
 
-First, we examine air quality changes from 1980 to 2019 for The US as a whole. Since there are 6 different pollutants, and many more testing sites, we take the average of the AQI values for each day. This is likely not a perfect heuristic, because a dangerous value for one pollutant should not be dimished by a safe value of another. However, if overall pollution levels change significantly it should be reflected in the mean.
+First, we examine air quality changes from 1980 to 2019 for The US as a whole. Since there are 6 different pollutants, and many more testing sites, we take the average of the AQI values for each day. This is likely not a perfect heuristic, because a dangerous value for one pollutant should not be diminished by a safe value of another. However, if overall pollution levels change significantly it should be reflected in the mean.
 
 
 ```{r}
@@ -218,10 +231,10 @@ ggplot(yr_pol, aes(x = year, y = avg_aqi, color = param)) +
 
 As shown above, US pollution overall is improving since the AQI is decreasing for most of the pollution type. However, there are drastic increases for both CO and PM2.5. 
 
-The following section is trying to discover the trend of US vehicle usage from 1960 to 2019.  
-The data used in this section can be found here: https://www.bts.gov/content/us-vehicle-miles
+In order to understand such change, I decided to look into the main source of CO and PM2.5 fossil fuels. For this part, US vehicle miles are used to represent fossil fuel usage. The following section is to discover the trend of US vehicle miles from 1960 to 2019.  
+The data used in this section is US vehicle miles.
 
-```{r}
+```{r, include=F}
 vehicle_miles = read_csv("US_vehicle_miles.csv")
 #clean up data
 names(vehicle_miles) <- as.character(unlist(vehicle_miles[1,]))
@@ -245,7 +258,9 @@ for (j in 1:ncol(t_vehicle)){
 }
 
 t_vehicle <- t_vehicle %>% mutate(sum = rowSums(.), year = rowname[-1])
+```
 
+```{r}
 ggplot(t_vehicle, aes(x = year, y = sum)) +
   scale_y_continuous(trans='log10') +
   geom_point() +
@@ -257,11 +272,12 @@ ggplot(t_vehicle, aes(x = year, y = sum)) +
   
 ```
 
-As shown above, the usage of vehicles in the US is siginificantly increasing over the past few decades. Due to the source of the data, between year 1960 and 1990, the discrepancy is 5 years instead of 1, which results in a steeper slope than from 1990 to 2019.
+As shown above, the usage of vehicles in the US is significantly increasing over the past few decades. Due to the source of the data, between year 1960 and 1990, the discrepancy is 5 years instead of 1, which results in a steeper slope than from 1990 to 2019.  
+  
+  
+The following section is to perform a linear regression on CO and PM2.5 level with US vehicle miles to see if there's a significant relation between them. 
 
-> The following section is to perform a linear regression on CO and PM2.5 level with US vehicle miles to see if there's a significant relation between them. 
-
-```{r}
+```{r, include=F}
 #CO and PM2.5 data
 poll2 <- yr_pol %>% filter(param == "PM2.5" | param == "CO") %>%
   pivot_wider(names_from = param, values_from = avg_aqi) %>%
@@ -281,9 +297,18 @@ lmPM = lm(PM2.5 ~ miles, data = mile_poll)
 summary(lmPM)
 ```
 
-According to the linear regressions above, the p values of miles for each pollutant are significant enough which indicates that there's a correlation between US vehicle usage and pollutant level for PM2.5 and CO. However, since the slope for CO is negative, this indicate that the fluctuate of CO level might not related to the US vehicle usage.
+According to the linear regressions above, the p values of miles for each pollutant are significant enough (1.73e-09 and 0.0010) which indicates that there's a correlation between US vehicle usage and pollutant level for PM2.5 and CO. However, the slope for CO is negative. To better illustrate, here is the plot of the lm.
 
+```{r}
+ggplot(data = mile_poll, aes(x = miles, y = CO))+
+  geom_point() +
+  geom_smooth(method = 'lm', level=0.95)
 
+ggplot(data = mile_poll, aes(x = miles, y = PM2.5))+
+  geom_point() +
+  geom_smooth(method = 'lm', level=0.95)
+```
+The plot may seem to be contradictory to the initial assumption which is fossil fuel use is positively related to CO and PM2.5 emission. However, other factors will contribute to this trend. For instance, the improved combustion efficiency of the engine may lead to less CO emission. In addition, since vehicle emission is not the only source of CO emission, the increase percentage of clean energy may also leads to the decrease of CO's aqi level. 
 
 ### Steve
 
@@ -346,7 +371,8 @@ ggplot(wisconsin_daily_19, aes(Date.Local, AQI, color = County.Name)) +
 Over time, pollution levels have improved in the US for metro and micropolitan areas. Higher density areas, such as New York City, has worse pollution levels and health problems related to pollution. We suggest to continue lowering pollution levels as average pollution levels since 1980 has been on a downward trend, as seen in our first figure. Breaking down the pollution levels by pollutant as seen in our second figure, Carbon Dioxide has been decreasing over time significantly. Its important to reduce as much CO2 as possible, as its a toxic gas to humans, as well as a catalyst to global warming that has bad effects on Earth. Considering that Carbon emissions from cars is significantly higher per year than what it was in 1980, seeing that CO2 pollutants is decreasing is a positive sign and that we should continue to keep lowering air pollution as a priority. An argument against pollutant affects on global warming is that its a part of Earths history, as we have gone through many cycles of warming and cooling periods and that humans are not affecting it. With the Covid pandemic, it gave us a unique opportunity to look at what happens to air pollution levels with less human activity to test if humans have an impact. Looking at the figure titled "Ozone levels in WI over last 6 years" we can see that Ozone levels stay relatively consistent from 2015-2019. In 2020, there is a significant decrease in Ozone levels. Considering the 2020 data is only for the 6 months of 2020, suggests that human activity has a huge impact on our environment especially with a change in levels in just a year.
 
 ## describe limitations here
-## describe issues that remain uncertain, but could be explored more fully with our data
+
+Although most of the pollutants AQI level are steadily decreasing, CO has been fluctuating frequently in the last decade. With the help of regression analysis, we can relatively confident to rule out vehicle emission as a main contributor. However, the main reason that causes the rapid increase of CO emission is yet to be studied. If we take a closer look at the time period in which CO's AQL level is rapidly increasing, we can maybe connect the time frame with real worlds events that are related to carbon emission to further investigate the connection.
 
 
 # Appendix
