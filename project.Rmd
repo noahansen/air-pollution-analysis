@@ -93,6 +93,7 @@ time_diff
 # Data
 
 [census data](https://www.census.gov/data/tables/time-series/demo/popest/2010s-total-metro-and-micro-statistical-areas.html)
+[Daily and Annual Ozone data](https://aqs.epa.gov/aqsweb/airdata/download_files.html)
 
 TODO- Explain relevant pollutants.
 
@@ -108,7 +109,21 @@ TODO- Explain relevant pollutants.
 
 - SO2: Sulfure Dioxide
 
-# Analysis
+-- Cleaning the Daily and Annual AQI datasets
+
+- Combined last 6 years of annual data using rbind(), and filtered the data for the 3 counties in Wisconsin that we focused on
+
+- Used separate data frames for 2019 and 2020 daily AQI data
+
+# Methods
+
+## Steve
+
+-- Used regression with geom_smooth when analyzing last 6 years of annual AQI data. Chose this method to see the relationship between 2020 data and the years that preceded that, as well as checking similarities within those previous years.
+
+-- Used a scatterplot for the daily data, so we can see any clusters of datapoints and how that compared to clusters of data during Covid in the first half of 2020.
+
+# Results
 
 ## Noah
 
@@ -152,7 +167,7 @@ aqi_dat %>% group_by(date, param) %>%
   labs(title = "Average AQI over Time, by Pollutant", x = "Year", y = "AQI")
 ```
 
-Now lets relate polution levels to the population of cities.
+Now lets relate pollution levels to the population of cities.
 
 
 ```{r}
@@ -280,7 +295,7 @@ According to the linear regressions above, the p values of miles for each pollut
 
 ### Steve
 
-```{r}
+```{r, echo=FALSE}
 county_2015 <- read.csv("annual_aqi_by_county_2015.csv")
 county_2016 <- read.csv("annual_aqi_by_county_2016.csv")
 county_2017 <- read.csv("annual_aqi_by_county_2017.csv")
@@ -333,6 +348,14 @@ ggplot(wisconsin_daily_19, aes(Date.Local, AQI, color = County.Name)) +
 ```
 
 **Looking at this graph, the Ozone levels are above 50 by mid-February. Compared to 2020, the 2019 Ozone levels increased far more quickly than in 2020. The first case of Covid was reported in February in Wisconsin. So it is possible many people began to stay at home before the stay at home order, which could be an explanation in the disparity between the early months of February in 2019 and 2020. We think without a doubt that Covid had an impact in these Wisconsin counties, especially Milwaukee as it is more industrious than Waukesha and Madison. With data, we have seen the impact that human activity has on air pollution. It can already be seen that stopping human activity for a few months made the Ozone levels stay under 50 far longer than with regular human activity. We suggest that this is enough evidence that we can really make a change for the better, and that lowering pollution levels should remain a priority.**
+
+# Conclusion
+
+Over time, pollution levels have improved in the US for metro and micropolitan areas. Higher density areas, such as New York City, has worse pollution levels and health problems related to pollution. We suggest to continue lowering pollution levels as average pollution levels since 1980 has been on a downward trend, as seen in our first figure. Breaking down the pollution levels by pollutant as seen in our second figure, Carbon Dioxide has been decreasing over time significantly. Its important to reduce as much CO2 as possible, as its a toxic gas to humans, as well as a catalyst to global warming that has bad effects on Earth. Considering that Carbon emissions from cars is significantly higher per year than what it was in 1980, seeing that CO2 pollutants is decreasing is a positive sign and that we should continue to keep lowering air pollution as a priority. An argument against pollutant affects on global warming is that its a part of Earths history, as we have gone through many cycles of warming and cooling periods and that humans are not affecting it. With the Covid pandemic, it gave us a unique opportunity to look at what happens to air pollution levels with less human activity to test if humans have an impact. Looking at the figure titled "Ozone levels in WI over last 6 years" we can see that Ozone levels stay relatively consistent from 2015-2019. In 2020, there is a significant decrease in Ozone levels. Considering the 2020 data is only for the 6 months of 2020, suggests that human activity has a huge impact on our environment especially with a change in levels in just a year.
+
+## describe limitations here
+## describe issues that remain uncertain, but could be explored more fully with our data
+
 
 # Appendix
 
