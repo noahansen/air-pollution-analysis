@@ -1,32 +1,35 @@
 ---
-title: "project"
+title: "Examining Air Quality Trends in the US"
 author: "Noah Hansen, Yuhan Dai, Steven Hizmi"
 date: "4/19/2021"
 output: html_document
 ---
 
-```{r setup, include=T, message=F}
-knitr::opts_chunk$set(echo = TRUE)
+```{r setup, include=F, message=F}
+knitr::opts_chunk$set(echo = F, message = F, warning = F)
 library(tidyverse)
 library(lubridate)
 ```
 
-```{r include=F}
-# used to combine separate csvs into one
+
+```{r include=F, eval= F}
+# used to combine separate csvs into one. Combine the 40 years of daily Aqi data
 
 # library(plyr)
-# from https://statisticsglobe.com/merge-csv-files-in-r
-
+# # from https://statisticsglobe.com/merge-csv-files-in-r
+# 
 # data_all <- list.files(path = "D:/stat340/data",     # Identify all csv files in folder
-#                        pattern = "*.csv", full.names = TRUE) %>% 
+#                        pattern = "*.csv", full.names = TRUE) %>%
 #   lapply(read_csv) %>%                              # Store all files in list
-#   bind_rows                                         # Combine data sets into one data set 
-
+#   bind_rows                                         # Combine data sets into one data set
+# 
 # write.csv(data_all, file = "D:/stat340/data/aqi_1980_2019", sep=",")
 ```
 
 
 ```{r}
+# read in the daily aqi data from 1980 to 2019
+
 aqi_dat = read_csv("aqi_1980_2019.csv")
 aqi_dat = aqi_dat %>% select(-X1, 
                      cbsa = CBSA,
@@ -39,24 +42,165 @@ aqi_dat = aqi_dat %>% select(-X1,
                      num_sites = `Number of Sites Reporting`)
 
 aqi_dat = aqi_dat %>% mutate(year = year(date), month = month(date), wday = wday(date, label=TRUE))
-head(aqi_dat)
+
+
+census_cbsa = read_csv("census_2010.csv") # combine population data
+
+census_cbsa = census_cbsa %>% 
+  select(cbsa_code = CBSA, pop = CENSUS2010POP) %>% 
+  group_by(cbsa_code) %>% 
+  summarise(pop = sum(pop)) # get pop of whole cbsa
+
+aqi_dat = aqi_dat %>% left_join(census_cbsa)
 ```
 
-This doesn't mean anything, really, as it combines all pollutants (maybe that is okay though?). Param is really 'Defining Parameter', which means it is the param chosen for the day from multiple that were measured. My guess is that they chose the pollutant with the worst AQI. If one pollutant is bad, then it probably doesn't matter too much if other pollutants are not as bad. Either way it is unhealthy for senitive groups or everyone. However, having two pollutants at moderate has to be worse than just one.
+
+```{r include=F, eval = F}
+# This table shows the average and maximum gaps in reporting each criteria pollutant for each CBSA. Maybe we would want to exclude some of the pollutants that are not measured very often per CBSA code. We can repeat this analysis for different time periods instead of the whole 40 years, as some stop reporting certain values for years at a time. This would be pretty obvious in the graphs though and can be addressed as it comes up.
+
+time_diff <- aqi_dat %>% 
+  group_by(cbsa_code,param) %>% 
+  arrange(date) %>% 
+  # lag() gets the value from the previous row. 
+  # Then extract digits from output of the difference, which is a sentence for some reason
+  summarise(date_diff = as.integer(str_extract(date-lag(date),"\\d*"))) %>% 
+  summarise(diff_avg = mean(date_diff, na.rm = T), diff_max = max(date_diff, na.rm=T))
+
+time_diff
+```
+
+
+```{r include = F}
+# Unclear why this way does not work for date difference
+
+# how to take the differce in dates
+# x1 <- as.Date("2019-02-07")
+# x2 <- as.Date("2018-02-07")
+# x1 +1
+# abs(julian(x1,x2)[1])
+# 
+# julian_new = function(date, origin){
+#   return(tryCatch(expr = julian(date,origin), error = function(e){print(e); return(NA)}))
+# }
+
+# aqi_dat %>% mutate(date_diff = abs(julian_new(date,lag(date))[1])) 
+```
+
+
+# Introduction
+
+
+# Data
+
+[census data](https://www.census.gov/data/tables/time-series/demo/popest/2010s-total-metro-and-micro-statistical-areas.html)
+
+TODO- Explain relevant pollutants.
+
+- CO: Carbon Monoxide forms from burning fuel. 
+
+- NO2: Nitrogen Dioxide forms from burning fuel. It can cause irritation of the throat, nose, and eyes, and decrease lung function when inhaled. 
+
+- Ozone: Ozone, known for creating smog, forms from the sunlight reacting with gases, such as nitrogen oxides. Ozone causes lung damage when inhaled in relatively low amounts.
+
+- PM10: Fine particulate matter (diamater $<=$ 10 micrometers) can come from combustion, but also includes dust from construction, agricuture, and even pollen. PM10 deposits on the surfaces of the larger airways of the upper region of the lung. It can worsen existing respitory diseases.
+
+- PM2.5: Particulate matter (diamater $<=$ 2.5 micrometers) forms from burning fuel. It is more likely than PM10 to cause damage by depositing deeper in the lung. This is usually the particle that you would associate with air pollution as it causes the most problems, mostly due to its prevalance. 
+
+- SO2: Sulfure Dioxide
+
+# Analysis
+
+## Noah
+
+First, we examine air quality changes from 1980 to 2019 for The US as a whole. Since there are 6 different pollutants, and many more testing sites, we take the average of the AQI values for each day. This is likely not a perfect heuristic, because a dangerous value for one pollutant should not be dimished by a safe value of another. However, if overall pollution levels change significantly it should be reflected in the mean.
+
 
 ```{r}
-temp = aqi_dat %>% group_by(year) %>% summarize(avg_aqi = mean(aqi))
-temp %>% arrange(avg_aqi)
+aqi_summary = aqi_dat %>% group_by(date) %>% 
+  summarise(aqi = mean(aqi)) 
+ 
+aqi_summary %>% ggplot(aes(x = date, y = aqi)) +
+  geom_point(alpha = .2) +
+  geom_smooth(color = "red", method = "lm") +  # se = F
+  labs(title = "Average AQI over Time", x = "Year", y = "AQI")
 ```
 
-TODO: The parameter is different depending on the date. If a CBSA reports multiple pollutants in a day, only one is chosen in the dataset. Is this okay? 
+```{r include = F}
+lm.fit = lm(aqi ~ date, data = aqi_dat)
+summary(lm.fit)
+coef(lm.fit)[[2]]*365*40
 
 
->The following section groups the data by year and pollution type, then summarized the data by taking the mean of the AQI. 
+head(aqi_dat)
+
+pred = tibble(
+  date = c(ymd("2060-01-01"))
+)
+
+predict.lm(lm.fit, pred)
+```
+Pollution data is inherently noisy, as levels can fluctuate widely from day to day. The wind could blow a high level of pollution from one area to another, for example, or there might be a forest fire every few years that increases levels. However, the downward trend estimate of about -.55 per year (P < .001) has a small standard error. Even noisy, high-variability data can have a significant trend. While -.55 is a small change in one year, over 40 years it has led to about a 22 point decrease in the aqi levels. If the trend continues, by 2060 the average will be around 17. It is also promising how the variability decreases after 2012 as this suggests less extreme AQI values. 
+
+```{r}
+aqi_dat %>% group_by(date, param) %>% 
+  summarise(aqi = mean(aqi)) %>% 
+  ggplot(aes(x = date, y = aqi)) +
+  geom_point(alpha = .15) +
+  geom_smooth(color = "red", method = "lm") +  # se = F
+  facet_wrap(~ param) +
+  ylim(0,125) +
+  labs(title = "Average AQI over Time, by Pollutant", x = "Year", y = "AQI")
+```
+
+Now lets relate polution levels to the population of cities.
+
+
+```{r}
+top_10 = aqi_dat %>% group_by(cbsa_code) %>% summarise(pop = pop[1], cbsa = cbsa[1]) %>% slice_max(n=6, order_by = pop) %>% select(cbsa_code, cbsa)
+
+# top_10 %>% group_by(date, param) %>% 
+#   summarise(aqi = mean(aqi)) %>% 
+#   ggplot(aes(x = date, y = aqi)) +
+#   geom_point(alpha = .15) +
+#   geom_smooth(color = "red", method = "lm") +  # se = F
+#   facet_wrap(~ param) +
+#   ylim(0,125) +
+#   labs(title = "Average AQI over Time, by Pollutant", x = "Year", y = "AQI")
+
+top_10
+```
+
+```{r}
+aqi_dat %>% 
+  filter(year == 2019, param == "Ozone") %>% 
+  group_by(cbsa_code) %>% 
+  summarise(aqi = mean(aqi), pop) %>% 
+  ggplot(aes(x = pop, y = aqi)) + 
+  geom_point(alpha = .2) +
+  geom_smooth(method = "lm")
+```
+
+Here we are able to look at the maximum reported values for each pollutant for every day in the New York area.
+```{r}
+# for New York-Newark-Jersey City
+
+aqi_dat %>% filter(cbsa_code == 35620) %>% 
+  group_by(date, param) %>% 
+  summarise(aqi = max(aqi), cbsa) %>% 
+  ggplot(aes(x = date, y = aqi)) +
+  geom_point(alpha = .2) +
+  geom_smooth(method = "lm") +
+  facet_wrap(~ param) 
+```
+
+
+## Han
+
+The following section groups the data by year and pollution type, then summarized the data by taking the mean of the AQI. 
 The graph depicts the change of air quality data over the last 40 years. The horizontal line indicates the Good Level for AQI, below the line (50) means the air quality is satisfactory.
 The details regarding the levels of concern for AQI can be found here: https://www.airnow.gov/aqi/aqi-basics/
 
-```{r, message=F}
+```{r}
 yr_pol = aqi_dat %>% group_by(year, param) %>% summarise(avg_aqi = mean(aqi))
 
 ggplot(yr_pol, aes(x = year, y = avg_aqi, color = param)) +
@@ -67,10 +211,10 @@ ggplot(yr_pol, aes(x = year, y = avg_aqi, color = param)) +
 
 As shown above, US pollution overall is improving since the AQI is decreasing for most of the pollution type. However, there are drastic increases for both CO and PM2.5. 
 
->The following section is trying to discover the trend of US vehicle usage from 1960 to 2019.  
+The following section is trying to discover the trend of US vehicle usage from 1960 to 2019.  
 The data used in this section can be found here: https://www.bts.gov/content/us-vehicle-miles
 
-```{r, warning=F}
+```{r}
 vehicle_miles = read_csv("US_vehicle_miles.csv")
 #clean up data
 names(vehicle_miles) <- as.character(unlist(vehicle_miles[1,]))
@@ -133,49 +277,8 @@ summary(lmPM)
 According to the linear regressions above, the p values of miles for each pollutant are significant enough which indicates that there's a correlation between US vehicle usage and pollutant level for PM2.5 and CO. However, since the slope for CO is negative, this indicate that the fluctuate of CO level might not related to the US vehicle usage.
 
 
-```{r}
-aqi_dat %>% filter(date > "2018-02-07" & date < "2019-02-07", cbsa_code == 11020)
-```
 
-This table shows the average and maximum gaps in reporting each criteria pollutant for each CBSA. Maybe we would want to exclude some of the pollutants that are not measured very often per CBSA code. We can repeat this analysis for different time periods instead of the whole 40 years, as some stop reporting certain values for years at a time.
-
-```{r}
-time_diff <- aqi_dat %>% 
-  group_by(cbsa_code,param) %>% 
-  arrange(date) %>% 
-  # lag() gets the value from the previous row. 
-  # Then extract digits from output of the difference, which is a sentence for some reason
-  summarise(date_diff = as.integer(str_extract(date-lag(date),"\\d*"))) %>% 
-  summarise(diff_avg = mean(date_diff, na.rm = T), diff_max = max(date_diff, na.rm=T))
-
-time_diff
-```
-Displays the average difference in days for reporting each pollutant in a nicer format. Also shows what pollutants each CBSA reports 
-```{r}
-time_diff %>% select(-diff_max) %>% pivot_wider(names_from = param, values_from = diff_avg)
-```
-For analysis on all 40 years, we probably want at least 5 datapoints a year for a total sample of 200. The avg difference for this would be less than 73. Maybe not the best metric because one CBSA meets this standard but did not report for 37 years. If a CBSA has data for a pollutant daily, long periods do not bring the average down very much.
-
-```{r}
-time_diff %>% filter(diff_avg < 73)
-```
-
-```{r include = F}
-# Don't know why this way doesn't end up working for date difference
-
-# how to take the differce in dates
-# x1 <- as.Date("2019-02-07")
-# x2 <- as.Date("2018-02-07")
-# x1 +1
-# abs(julian(x1,x2)[1])
-# 
-# julian_new = function(date, origin){
-#   return(tryCatch(expr = julian(date,origin), error = function(e){print(e); return(NA)}))
-# }
-
-# aqi_dat %>% mutate(date_diff = abs(julian_new(date,lag(date))[1])) 
-```
-
+### Steve
 
 ```{r}
 county_2015 <- read.csv("annual_aqi_by_county_2015.csv")
@@ -193,7 +296,8 @@ counties <- rbind(county_2015,county_2016, county_2017, county_2018, county_2019
 ```
 
 **With the lockdowns during the Covid pandemic, it gave us an opportunity to see what happened to air pollution with less human activity in three Wisconsin counties: Dane, Milwaukee, and Waukesha counties. So we have collected county data over the last 6 years to compare with data during the lockdowns. We also collected daily data from 2020, from January to June (as that is the most updated data out there thus far).**
-```{r, warning=FALSE}
+
+```{r}
 wisconsin_counties <- counties %>% filter(County == "Dane" | County == "Milwaukee" | County == "Waukesha")
 ggplot(wisconsin_counties, aes(Year, Days.Ozone, color = County)) +
   geom_smooth() +
@@ -201,6 +305,7 @@ ggplot(wisconsin_counties, aes(Year, Days.Ozone, color = County)) +
   ggtitle("Ozone levels in WI over last 6 years")
   
 ```
+
 **According to the U.S. Air Quality Index (AQI), Ozone levels at or below 50 represents good air quality whereas Ozone levels at or above 300 represents hazardous air quality. Ozone Action Days are days that are declared to be of caution to citizens, as they should limit their time outdoors. As we can see, ozone action days from 2015 to 2019 stay around 125, with Milwaukee county being higher on average. But in 2020, we see a significant trend downwards. In March of 2020, the Governor of Wisconsin issued a stay at home order, and the closure of all non essential business due to the Covid outbreak. We can clearly see that the decrease in human activity led to less days of harmful Ozone levels in these three Wisconsin counties. To confirm this conclusion, we are going to look at the daily data of these three counties in the first half of 2020 and see if these changes coincide with the stay at home orders. **
 
 ```{r}
@@ -214,6 +319,7 @@ ggplot(wisconsin_daily, aes(Date.Local, AQI, color= County.Name)) +
   ggtitle("Ozone levels first 6 months of 2020")
 
 ```
+
 **Considering that the first lockdown in Wisconsin was March, the ozone levels don't go beyond 50, which is deemed safe. The ozone levels don't start increasing until May and June, which is to be expected as Ozone levels increase during summer. The question is: Did Covid have an affect on the Ozone levels or was it increased due to it being Summer? To see which is true, we decided to look at the daily data from 2019, with no stay at home orders to see how they compare.**
 
 ```{r}
@@ -225,6 +331,11 @@ ggplot(wisconsin_daily_19, aes(Date.Local, AQI, color = County.Name)) +
   xlab("Month") +
   ggtitle("Ozone levels daily in 2019")
 ```
+
 **Looking at this graph, the Ozone levels are above 50 by mid-February. Compared to 2020, the 2019 Ozone levels increased far more quickly than in 2020. The first case of Covid was reported in February in Wisconsin. So it is possible many people began to stay at home before the stay at home order, which could be an explanation in the disparity between the early months of February in 2019 and 2020. We think without a doubt that Covid had an impact in these Wisconsin counties, especially Milwaukee as it is more industrious than Waukesha and Madison. With data, we have seen the impact that human activity has on air pollution. It can already be seen that stopping human activity for a few months made the Ozone levels stay under 50 far longer than with regular human activity. We suggest that this is enough evidence that we can really make a change for the better, and that lowering pollution levels should remain a priority.**
+
+# Appendix
+
+If you would like to see the code, it is [hosted on GitHub](https://github.com/noahansen/air-pollution-analysis).
 
 

@@ -1,4 +1,6 @@
-*.csv
+aqi_1980_2019.csv
+daily_44201_2019.csv
+daily_44201_2020.csv
 *.DS_Store
 *.Rhistory
 *.RData
