@@ -70,30 +70,22 @@ time_diff
 ```
 
 
-```{r include = F}
-# Unclear why this way does not work for date difference
-
-# how to take the differce in dates
-# x1 <- as.Date("2019-02-07")
-# x2 <- as.Date("2018-02-07")
-# x1 +1
-# abs(julian(x1,x2)[1])
-# 
-# julian_new = function(date, origin){
-#   return(tryCatch(expr = julian(date,origin), error = function(e){print(e); return(NA)}))
-# }
-
-# aqi_dat %>% mutate(date_diff = abs(julian_new(date,lag(date))[1])) 
-```
-
-
 # Introduction
+
+Since the 1960s, the US has recognized the damage pollution causes, and has been passing environmental acts ever since in an attempt to reduce harmful emmisions. Over the last couple decades, the awareness for the dangers of pollution has risen even higher, especially with the threat of global warming. Data measuring the concentration of pollutants has allowed researchers to realize the harmful affects that pollutants have on health, and communicate the dangers to the public. Weather channels are even seen reporting the air quality and indicate if it is safe to exercise outside. However, despite the increased awareness, it seems like the US is only producing more cars and more poepole are commuting to work, not to mention the rising population. Furhermore, people are shopping less in stores, instead choosing to order online and have the items delivered, often from another state. Are the environmental restrictions and improvements in pollutant filtering for fuel-burning processes enough to improve air quality? Or has pollution been on the rise within the US?
+
+We argue that over time, pollution levels have improved within the US for metro and micropolitan areas. Furthermore, areas with larger population densities have worse pollution levels and more health problems related to pollution, suggesting that lowering pollution levels should remain a prioritity.
 
 
 # Data
+Sources:
 
 [census data](https://www.census.gov/data/tables/time-series/demo/popest/2010s-total-metro-and-micro-statistical-areas.html)
-[Daily and Annual Ozone data](https://aqs.epa.gov/aqsweb/airdata/download_files.html)
+
+[Pre-generated data files](https://aqs.epa.gov/aqsweb/airdata/download_files.html)
+
+
+"Air Data: Air Quality Data Collected at Outdoor Monitors Across the US", EPA, April 15, 2021, https://www.epa.gov/outdoor-air-quality-data
 
 TODO- Explain relevant pollutants.
 
