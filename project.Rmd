@@ -72,55 +72,33 @@ time_diff
 
 # Introduction
 
-Since the 1960s, the US has recognized the damage pollution causes, and has been passing environmental acts ever since in an attempt to reduce harmful emmisions. Over the last couple decades, the awareness for the dangers of pollution has risen even higher, especially with the threat of global warming. Data measuring the concentration of pollutants has allowed researchers to realize the harmful affects that pollutants have on health, and those dangers have been communicated to the public. Weather channels are even seen reporting the air quality and indicate if it is safe to exercise outside. However, despite the increased awareness, it seems like the US is only producing more cars and more people are commuting to work, not to mention the rising population. Furhermore, people are shopping less in stores, instead choosing to order online and have the items delivered, often from another state. Are the environmental restrictions and improvements in pollutant filtering for fuel-burning processes enough to improve air quality? Or has pollution been on the rise within the US?
-
-We argue that over time, pollution levels have improved within the US for metro and micropolitan areas. 
+Since the 1960s, the US has recognized the damage pollution causes, and has been passing environmental acts ever since in an attempt to reduce harmful emissions.  However, despite the increased awareness and attempts to improve air quality, it seems like the effort is quite diminishing compares to pollution from the rising population. Are the environmental restrictions and scitific breakthroughs in pollution control enough to improve air quality? Or has pollution been on the rise within the US?
+We argue that over time, pollution levels have improved within the US for both metro and micro-politan areas, and is due to multiple complex factors instead of a single cause. 
 
 
 # Data
 
 
-We pulled Air Quality Index (AQI) data from [Pre-generated data files](https://aqs.epa.gov/aqsweb/airdata/download_files.html). AQI is an indicator of how dangerous current concentrations of a pollutant are. A value less than 50 is good, while over 300 is hazardous. The data is organized by CBSA, which defines metro and micro-politan areas. We use both daily and yerly summaries. 
+We pulled Air Quality Index (AQI) data from [Pre-generated data files](https://aqs.epa.gov/aqsweb/airdata/download_files.html). AQI is an indicator of how dangerous current concentrations of a pollutant are. A value less than 50 is good, while over 300 is hazardous. The data is organized by CBSA, which defines metro and micro-politan areas. We use both daily and yearly summaries. 
 
 
-[US Vehicle Miles](https://www.bts.gov/content/us-vehicle-miles )
+[US Vehicle Miles](https://www.bts.gov/content/us-vehicle-miles ) contains the mile count (in millions) for US transportation including air, highway, transit and railway transportation since 1960. Due to the large amount of missing data and the uneven year gap between each entry (year 1960 and 1990, the discrepancy is 5 years and then the gap is i year), only 4 data entry between 1990 and 2019 are used. 
 
 Citations:
 
 "Air Data: Air Quality Data Collected at Outdoor Monitors Across the US", EPA, April 15, 2021, https://www.epa.gov/outdoor-air-quality-data
 
-
-
-We do not look at every pollutant specifically, but these are the pollutants measured at the testing sites in our datasets:
-
-- CO: Carbon Monoxide forms from burning fuel. 
-
-- NO2: Nitrogen Dioxide forms from burning fuel. It can cause irritation of the throat, nose, and eyes, and decrease lung function when inhaled. 
-
-- Ozone: Ozone, known for creating smog, forms from the sunlight reacting with gases, such as nitrogen oxides. Ozone causes lung damage when inhaled in relatively low amounts.
-
-- PM10: Fine particulate matter (diamater $<=$ 10 micrometers) can come from combustion, but also includes dust from construction, agricuture, and even pollen. PM10 deposits on the surfaces of the larger airways of the upper region of the lung. It can worsen existing respitory diseases.
-
-- PM2.5: Particulate matter (diamater $<=$ 2.5 micrometers) forms from burning fuel. It is more likely than PM10 to cause damage by depositing deeper in the lung. This is usually the particle that you would associate with air pollution as it causes the most problems, mostly due to its prevalance. 
-
-- SO2: Sulfure Dioxide is formed from the burning of coal, oil, and copper smelting. It has similar effects to NO2.
+"U.S. Vehicle-Miles", Bureau of Transportation Statistics, https://www.bts.gov/content/us-vehicle-miles
 
 ### Data cleaning
 
-- Combined 40 years of daily AQI data, which were in separate files. 
+For Air Quality Index (AQI) data, we combined 40 years of daily AQI data, which were in separate files. We also combine last 6 years of annual data, and filter the data for the 3 counties in Wisconsin that we decide to focus on. And then we pull separate data frames for 2019 and 2020 daily AQI data
 
-
-- Combined last 6 years of annual data using, and filtered the data for the 3 counties in Wisconsin that we focused on
-
-- Used separate data frames for 2019 and 2020 daily AQI data
-
--- Cleaning the US Vehicle Miles data
-
-- Adding row names to the data, reshaping the dataset by using transpose and filtered the data for 4 variables w/o NA due to the data set is ragged on both edge.
+For the US Vehicle Miles data, we transpose the dataset to rotate it so that the years are the row name that represent each entry. We then filter the data for 4 different ways of transportation that don't have much missing data.
 
 # Methods
 
-The analysis primarily uses linear regression, as our intent is to discover linear trends of variables related to pollution. We do not include quadratic terms, or fit other non-linear models, as the inherent noisiness in the data would lead to overfitting and false conclusions. We also do a hypothsis test to determine if the impact of season is significant on a pollutant. For visualization, we use scatter, line plots, and box plots. 
+The analysis primarily uses linear regression, as our intent is to discover linear trends of variables related to pollution. We do not include quadratic terms, or fit other non-linear models, as the inherent noisiness in the data would lead to overfitting and false conclusions. We also perform a hypothesis test to determine if the impact of season is significant on a pollutant. For visualization, we use scatter, line plots, and box plots. 
 
 
 # Results
@@ -153,9 +131,9 @@ pred = tibble(
 predict.lm(lm.fit, pred)
 ```
 
-Pollution data is inherently noisy, as levels can fluctuate widely from day to day. The wind could blow a high level of pollution from one area to another, for example, or there might be a forest fire every few years that increases levels. For this reason, a very small percentage of the variance is explained by the model. However, the downward trend estimate of about -.55 per year (P < .001) has a small standard error. Even noisy data can have a significant trend. While -.55 is a small change in one year, over 40 years it has led to about a 22 point decrease in the average aqi levels which is a significant improvement. If the trend continues, by 2060 the average will be around 17. It is also promising how the variability decreases after 2012. This suggests that extreme AQI values, which cause the most damage, are being minimized.
+Pollution data is inherently noisy, as levels can fluctuate widely from day to day. The wind could blow a high level of pollution from one area to another or there might be a forest fire every few years that significantly increases the AQI level. For this reason, a very small percentage of the variance is explained by the model. However, the downward trend estimate of about -.55 per year (P < .001) has a small standard error. Even noisy data can have a significant trend. While -.55 is a small change in one year, over 40 years it has led to about a 22 point decrease in the average AQI level which is a significant improvement. If the trend continues, by 2060 the average will be around 17. It is also promising how the variability decreases after 2012. This suggests that extreme AQI values, which cause the most damage, are being minimized.
 
-Some pollutant are easier to reduce in emmisions than others (Fig 1-B). The improvement seen in *Fig 1-A* is most  attributed to CO, SO2, NO2. The US has made little progress in improving the concentraion of particulate matter. The varibiliity of *Fig 1-A* is likely explained by Ozone, as it's variability goes down dramatically after 2012. What is causing this variability in Ozone? 
+Some pollutant emissions are easier to reduce than others (Fig 1-B). The improvement seen in *Fig 1-A* is mainly attributed to CO, SO2, NO2. The US has made little progress in improving the concentration of particulate matter. The variability of *Fig 1-A* is likely explained by Ozone, as it's variability goes down dramatically after 2012. What is causing this variability in the Ozone? 
 
 #### Figure 1-B
 ```{r}
@@ -170,7 +148,7 @@ aqi_dat %>% group_by(date, param) %>%
 ```
 
 
-It seems like the spiking is happening in the summer (Fig 1-A), and ozone is the suspect. *Fig 1-C* motivates a hypthesis test on the difference of mean AQI values in summer months versus non-summer months. The observed difference is about 51 AQI points. The hypothesis test on mean ozone concentrations in the summer versus other seasons shows that this differnce is significant (P < .001). This increase of ozone concentrations in the summer explains the some of variability in the *Fig 1-A*.  
+It seems like the spiking is happening in the summer (Fig 1-A), and ozone is the suspect. *Fig 1-C* motivates a hypothesis test on the difference of mean AQI values in summer months versus non-summer months. The observed difference is about 51 AQI points. The hypothesis test on mean ozone concentrations in the summer versus other seasons shows that this difference is significant (P < .001). This increase of ozone concentrations in the summer explains the some of variability in the *Fig 1-A*.  
 
 #### Figure 1-C 
 
@@ -289,10 +267,9 @@ ggplot(yr_pol, aes(x = year, y = avg_aqi, color = param)) +
   labs(title = "US Air Quality Data by Pollution Type")
 ```
 
-As shown above, US pollution overall is improving since the AQI is decreasing for most of the pollution type. However, there are drastic increases for both CO and PM2.5. 
+As shown above, US pollution overall is improving as the AQI level is decreasing for most of the pollution type. However, there are drastic increases or fluctuate for CO and PM2.5. 
 
-In order to understand such change, I decided to look into the main source of CO and PM2.5 fossil fuels. For this part, US vehicle miles are used to represent fossil fuel usage. The following section is to discover the trend of US vehicle miles from 1960 to 2019.  
-The data used in this section is US vehicle miles.
+In order to understand the change, we decided to look into the main source of CO and PM2.5 fossil fuels. According to [EPA](https://www.epa.gov/), the main source of CO or PM2.5 to outdoor air are burning fossil fuels. For this part, data US vehicle miles are used to represent fossil fuel usage. The following section is to discover the trend of US vehicle miles from 1960 to 2019.  
 
 
 ```{r, include=F}
@@ -301,7 +278,11 @@ vehicle_miles = read_csv("US_vehicle_miles.csv")
 names(vehicle_miles) <- as.character(unlist(vehicle_miles[1,]))
 vehicle_miles = vehicle_miles[-1,]
 
-vehicle_use <- vehicle_miles %>% filter(Year == "Air carrier, domestic, all services" | Year == "Highway, total" | Year == "Transite, total" | Year == "Total train-miles")
+vehicle_use <- vehicle_miles %>% 
+  filter(Year == "Air carrier, domestic, all services" | 
+           Year == "Highway, total" | 
+           Year == "Transite, total" | 
+           Year == "Total train-miles")
 # want the sum of miles for each category
 t_vehicle <- as.data.frame(t(vehicle_use))
 names(t_vehicle) <- as.character(unlist(t_vehicle[1, ]))
@@ -335,7 +316,7 @@ ggplot(t_vehicle, aes(x = year, y = sum)) +
   
 ```
 
-As shown above, the usage of vehicles in the US is significantly increasing over the past few decades. Due to the source of the data, between year 1960 and 1990, the discrepancy is 5 years instead of 1, which results in a steeper slope than from 1990 to 2019.  
+As shown above, the usage of vehicles in the US is significantly increasing over the past few decades. The steeper slope between 1960 and 1990 is due to the 5 year gaps compares to the 1 year gap between 1990 to 2019.
   
   
 The following section is to perform a linear regression on CO and PM2.5 level with US vehicle miles to see if there's a significant relation between them. 
@@ -362,7 +343,7 @@ lmPM = lm(PM2.5 ~ miles, data = mile_poll)
 summary(lmPM)
 ```
 
-According to the linear regressions above, the p values of miles for each pollutant are significant enough (1.73e-09 and 0.0010) which indicates that there's a correlation between US vehicle usage and pollutant level for PM2.5 and CO. However, the slope for CO is negative. To better illustrate, here is the plot of the lm.
+According to the linear regressions above, the p values of miles for each pollutant are significant enough (1.73e-09 and 0.0010) which indicates that there's a correlation between US vehicle usage and pollutant level for PM2.5 and CO. However, the slope for CO is negative. To better illustrate, here is the plot of the linear model.
 
 #### Figure 2-D
 
@@ -376,7 +357,7 @@ ggplot(data = mile_poll, aes(x = miles, y = PM2.5))+
   geom_smooth(method = 'lm', level=0.95)
 ```
 
-The plot may seem to be contradictory to the initial assumption which is fossil fuel use is positively related to CO and PM2.5 emission. However, other factors will contribute to this trend. For instance, the improved combustion efficiency of the engine may lead to less CO emission. In addition, since vehicle emission is not the only source of CO emission, the increase percentage of clean energy may also leads to the decrease of CO's aqi level. 
+The plot may seem to be contradictory to the initial assumption which is fossil fuel use is positively related to CO and PM2.5 emission increase. However, other factors will contribute to this trend. For instance, the improved combustion efficiency of the engine may lead to less CO emission. In addition, since vehicle emission is not the only source of CO emission, the increase percentage of clean energy may also leads to the decrease of CO's AQI level.  
 
 
 ```{r, echo=FALSE}
@@ -394,7 +375,7 @@ counties <- rbind(county_2015,county_2016, county_2017, county_2018, county_2019
 
 ```
 
-With the lockdowns during the Covid pandemic, it gave us an opportunity to see what happened to air pollution with less human activity in three Wisconsin counties: Dane, Milwaukee, and Waukesha counties. So we have collected county data over the last 6 years to compare with data during the lockdowns. We also collected daily data from 2020, from January to June (as that is the most updated data out there thus far).
+With the lockdown during the Covid pandemic, it gave us an opportunity to see what happened to air pollution with less human activity in three Wisconsin counties: Dane, Milwaukee, and Waukesha. So we used the collected county data over the last 6 years to compare with data during the lockdown. We also looked into data from 2020, from January to June (as that is the most updated data out there thus far).  
 
 #### Figure 3-A
 
@@ -407,7 +388,7 @@ ggplot(wisconsin_counties, aes(Year, Days.Ozone, color = County)) +
   
 ```
 
-According to the U.S. Air Quality Index (AQI), Ozone levels at or below 50 represents good air quality whereas Ozone levels at or above 300 represents hazardous air quality. Ozone Action Days are days that are declared to be of caution to citizens, as they should limit their time outdoors. As we can see, ozone action days from 2015 to 2019 stay around 125, with Milwaukee county being higher on average. But in 2020, we see a significant trend downwards. In March of 2020, the Governor of Wisconsin issued a stay at home order, and the closure of all non essential business due to the Covid outbreak. We can clearly see that the decrease in human activity led to less days of harmful Ozone levels in these three Wisconsin counties. To confirm this conclusion, we are going to look at the daily data of these three counties in the first half of 2020 and see if these changes coincide with the stay at home orders.
+According to the U.S. Air Quality Index (AQI), Ozone levels at or below 50 represents good air quality whereas Ozone levels at or above 300 represents hazardous air quality. Ozone Action Days are days that are declared to be of caution to citizens, as they should limit their time outdoors. As we can see, ozone action days from 2015 to 2019 stay around 125, with Milwaukee county being higher on average. But in 2020, we see a significant downward trend. In March of 2020, the Governor of Wisconsin issued a stay at home order, and the closure of all non essential business due to the Covid outbreak. We can clearly see that the decrease in human activity led to less days of harmful Ozone levels in these three Wisconsin counties. To confirm this conclusion, we are going to look at the daily data of these three counties in the first half of 2020 and see if these changes coincide with the stay at home orders.  
 
 #### Figure 3-B
 ```{r}
@@ -422,7 +403,7 @@ ggplot(wisconsin_daily, aes(Date.Local, AQI, color= County.Name)) +
 
 ```
 
-**Considering that the first lockdown in Wisconsin was March, the ozone levels don't go beyond 50, which is deemed safe. The ozone levels don't start increasing until May and June, which is to be expected as Ozone levels increase during summer. The question is: Did Covid have an affect on the Ozone levels or was it increased due to it being Summer? To see which is true, we decided to look at the daily data from 2019, with no stay at home orders to see how they compare.**
+Considering that the first lockdown in Wisconsin was March, the ozone levels don't go beyond 50, which is deemed safe. The ozone levels don't start increasing until May and June, which is to be expected as Ozone levels increase during summer. The question is: Did Covid have an affect on the Ozone levels or was it increased due to it being summer? To see which is true, we decided to look at the daily data from 2019, with no stay at home orders to see how they compare.  
 
 #### Figure 3-C
 
@@ -436,13 +417,19 @@ ggplot(wisconsin_daily_19, aes(Date.Local, AQI, color = County.Name)) +
   ggtitle("Ozone levels daily in 2019")
 ```
 
-**Looking at this graph, the Ozone levels are above 50 by mid-February. Compared to 2020, the 2019 Ozone levels increased far more quickly than in 2020. The first case of Covid was reported in February in Wisconsin. So it is possible many people began to stay at home before the stay at home order, which could be an explanation in the disparity between the early months of February in 2019 and 2020. We think without a doubt that Covid had an impact in these Wisconsin counties, especially Milwaukee as it is more industrious than Waukesha and Madison. With data, we have seen the impact that human activity has on air pollution. It can already be seen that stopping human activity for a few months made the Ozone levels stay under 50 far longer than with regular human activity. We suggest that this is enough evidence that we can really make a change for the better, and that lowering pollution levels should remain a priority.**
+Looking at this graph, the Ozone levels are above 50 by mid-February. Compared to 2020, the 2019 Ozone levels increased far more quickly than in 2020. The first case of Covid was reported in February in Wisconsin. So it is possible people began to stay at home before the stay at home order, which could be an explanation in the disparity between the early months of February in 2019 and 2020. We think without a doubt that Covid had an impact in the ozone AQI level, especially Milwaukee as it is more industrious than Waukesha and Madison. With data, we have seen the impact that human activity has on air pollution. It can already be seen that stopping human activity for a few months made the Ozone levels stay under 50 far longer than with regular human activity.
 
 # Conclusion
 
-Over time, pollution levels have improved in the US for metro and micropolitan areas. Higher density areas, such as New York City, has worse pollution levels and health problems related to pollution. We suggest to continue lowering pollution levels as average pollution levels since 1980 has been on a downward trend, as seen in our first figure. Breaking down the pollution levels by pollutant as seen in our second figure, Carbon Dioxide has been decreasing over time significantly. Its important to reduce as much CO2 as possible, as its a toxic gas to humans, as well as a catalyst to global warming that has bad effects on Earth. Considering that Carbon emissions from cars is significantly higher per year than what it was in 1980, seeing that CO2 pollutants is decreasing is a positive sign and that we should continue to keep lowering air pollution as a priority. An argument against pollutant affects on global warming is that its a part of Earths history, as we have gone through many cycles of warming and cooling periods and that humans are not affecting it. With the Covid pandemic, it gave us a unique opportunity to look at what happens to air pollution levels with less human activity to test if humans have an impact. Looking at the figure titled "Ozone levels in WI over last 6 years" we can see that Ozone levels stay relatively consistent from 2015-2019. In 2020, there is a significant decrease in Ozone levels. Considering the 2020 data is only for the 6 months of 2020, suggests that human activity has a huge impact on our environment especially with a change in levels in just a year.
+Over time, pollution levels have been greatly improved in the US for both metro and micro-politan areas. We believe that the average air quality is getting better in the US since the average pollution levels has been on a downward trend after 1980, as seen in figure 1-A.  
 
-There are many factors that affect AQI values which we did not explore. Given more time, it would be useful to examine more subsets of the data, since there is so much available. The project does not explore 
+Breaking down the pollution levels by pollutant as seen in figure 2-A, we can see that AQL level of CO and PM2.5 is increasing or fluctuating drastically over the years. By looking into the main source of both pollutants, fossil fuel usage by vehicles, we discovered the connection between them even though for CO it's a negative relationship. However, since CO emission can have multiple sources, only looking at the fossil fuel usage of vehicle will not be able to explain the whole picture.
+
+An argument against pollutant affects on global warming is that it's a natural cycle of the Earth climate. With the Covid pandemic, it gave us a unique opportunity to look at what happens to air pollution levels with less human activity to test if humans have an impact. Looking at figure 3-A, we can see that Ozone levels stay relatively consistent from 2015-2019. In 2020, there is a significant decrease in Ozone levels, suggests that human activity has a huge impact on our environment especially with such change in Ozone levels in just a year.
+
+There are many factors that affect AQI values which we did not explore, and the ones we've done cannot fully explain the change in air quality level. To suggest doing one thing can eliminate air pollution once and for all is definitely incorrect. Reducing air pollution is a complex project on such an gigantic scale that requires the entire world to work together as it will affect everyone. However, as shown in this project, great progresses have been made which indicates we are on a right track. Nonetheless, each individual, corporations and nations should all work together to protect the one of the most valuable resources in this world, air. 
+
+# Limitations
 
 *Fig 1-A - Fig 1-C* have some drawbacks due to inconsistent reporting on AQI values, and using the mean as a heuristic. Not all testing sites reported values every day, and some reported different pollutants on different days. Some stopped reporting for years at a time. This could cause the data to be more variable if a city with high AQI values stopped reporting for a while, then started again. For the heuristic every fe Having one pollutant at an AQI of 300 and another at 0 is more dangerous than both being at 150, but the mean does not differentiate these two cases. To consider this case a much smaller subset, such as a city-by-city analysis, would have to be done. Although most of the pollutants' AQI level are steadily decreasing, CO has been fluctuating frequently in the last decade. With the help of regression analysis, we can relatively confident to rule out vehicle emission as a main contributor. However, the main reason that causes the rapid increase of CO emission is yet to be studied. If we take a closer look at the time period in which CO's AQL level is rapidly increasing, we can maybe connect the time frame with real worlds events that are related to carbon emission to further investigate the connection.
 
